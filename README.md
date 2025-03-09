@@ -9,9 +9,9 @@
 
 Retrieve comprehensive JSON data for any app from Google Play by making a simple GET request:
 ```
-https://api.playstore.rajkumaar.co.in/json?id=<YOUR-PACKAGE-ID>
+https://play.rajkumaar.co.in/json?id=<YOUR-PACKAGE-ID>
 ```
-Example : https://api.playstore.rajkumaar.co.in/json?id=com.dd.doordash
+Example : https://play.rajkumaar.co.in/json?id=com.dd.doordash
 
 Sample JSON response with all possible details:
 ```json
@@ -48,7 +48,7 @@ Sample JSON response with all possible details:
 ## Integration with [Shields.io](https://shields.io)
 Customize your README with dynamic badges for specific attributes. Utilize the following template:
 ```markdown
-![Badge](https://img.shields.io/endpoint?url=https://api.playstore.rajkumaar.co.in/<ATTRIBUTE-NAME>?id=<PACKAGE-ID>)
+![Badge](https://img.shields.io/endpoint?url=https://play.rajkumaar.co.in/<ATTRIBUTE-NAME>?id=<PACKAGE-ID>)
 ```
 Supported attributes: 
 - packageID
@@ -77,21 +77,21 @@ Explore customization options based on shields.io style parameters. Learn more [
 
 Downloads
 ```markdown
-![Downloads Badge](https://img.shields.io/endpoint?color=success&url=https://api.playstore.rajkumaar.co.in/downloads?id=com.dd.doordash)
+![Downloads Badge](https://img.shields.io/endpoint?color=success&url=https://play.rajkumaar.co.in/downloads?id=com.dd.doordash)
 ```
-![Downloads Badge](https://img.shields.io/endpoint?color=success&url=https://api.playstore.rajkumaar.co.in/downloads?id=com.dd.doordash)
+![Downloads Badge](https://img.shields.io/endpoint?color=success&url=https://play.rajkumaar.co.in/downloads?id=com.dd.doordash)
 
 Version
 ```markdown
-![Version Badge](https://img.shields.io/endpoint?color=blue&url=https://api.playstore.rajkumaar.co.in/version?id=com.dd.doordash)
+![Version Badge](https://img.shields.io/endpoint?color=blue&url=https://play.rajkumaar.co.in/version?id=com.dd.doordash)
 ```
-![Version Badge](https://img.shields.io/endpoint?color=blue&url=https://api.playstore.rajkumaar.co.in/version?id=com.dd.doordash)
+![Version Badge](https://img.shields.io/endpoint?color=blue&url=https://play.rajkumaar.co.in/version?id=com.dd.doordash)
 
 Developer
 ```markdown
-![Dev Badge](https://img.shields.io/endpoint?color=orange&style=for-the-badge&url=https://api.playstore.rajkumaar.co.in/developer?id=com.dd.doordash)
+![Dev Badge](https://img.shields.io/endpoint?color=orange&style=for-the-badge&url=https://play.rajkumaar.co.in/developer?id=com.dd.doordash)
 ```
-![Dev Badge](https://img.shields.io/endpoint?color=orange&style=for-the-badge&url=https://api.playstore.rajkumaar.co.in/developer?id=com.dd.doordash)
+![Dev Badge](https://img.shields.io/endpoint?color=orange&style=for-the-badge&url=https://play.rajkumaar.co.in/developer?id=com.dd.doordash)
 
 ### Known Issues
 

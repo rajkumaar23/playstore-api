@@ -12,7 +12,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-const apiURL = "https://api.playstore.rajkumaar.co.in/json?id=com.dd.doordash"
+const apiURL = "https://play.rajkumaar.co.in/json?id=com.dd.doordash"
 
 func isValidDate(date string) error {
 	_, err := time.Parse("Jan 2, 2006", date)
@@ -65,7 +65,7 @@ func TestAPIResponse(t *testing.T) {
 	}
 
 	assert.Equal(t, data.PrivacyPolicy, "https://www.doordash.com/privacy/", "Privacy policy mismatch")
-	
+
 	assert.Equal(t, data.Website, "https://www.doordash.com/", "Website mismatch")
 	assert.Equal(t, data.SupportEmail, "support@doordash.com", "Support email mismatch")
 	assert.True(t, data.Rating > "0.0" && data.Rating < "5.0", "Rating mismatch")
