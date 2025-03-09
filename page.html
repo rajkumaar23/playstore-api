@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Unofficial Google Play Store API - by Rajkumar</title>
+    <meta name="description" content="Unofficial Play Store API by Rajkumar - Retrieve comprehensive JSON data for any app from Google Play with ease.">
+    <meta name="keywords" content="Play Store API, Google Play API, Android app metadata, app details, JSON API, Rajkumar">
+    <meta name="author" content="Rajkumar">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
+    <style>
+        pre {
+            white-space: pre-wrap; /* Wrap text inside <pre> */
+            word-wrap: break-word; /* Break long words */
+        }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800">
+    <header class="container mx-auto p-4 pb-0">
+        <h1 class="text-3xl font-bold">Unofficial Google Play Store API <span class="text-sm text-underline">by <a href="https://rajkumaar.co.in" target="_blank">Rajkumar</a></span></h1>
+        <p class="mt-2">Explore android app metadata with ease!</p>
+    </header>
+    <main class="container mx-auto p-4 pt-0">
+        <section class="my-6">
+            <h2 class="text-2xl font-semibold">Usage</h2>
+            <p class="mt-2">Retrieve comprehensive JSON data for any app from Google Play by making a simple GET request:</p>
+            <pre class="bg-gray-200 p-2 rounded mt-2">https://api.playstore.rajkumaar.co.in/json?id=&lt;YOUR-PACKAGE-ID&gt;</pre>
+            <p class="mt-2">Example: <a target="_blank" href="https://api.playstore.rajkumaar.co.in/json?id=com.dd.doordash" class="text-blue-600">https://api.playstore.rajkumaar.co.in/json?id=com.dd.doordash</a></p>
+        </section>
+
+        <section class="my-6">
+            <h2 class="text-2xl font-semibold">Sample JSON response with all possible details:</h2>
+            <pre class="bg-gray-200 p-4 rounded mt-2">
+{
+    "packageID": "com.dd.doordash",
+    "name": "DoorDash - Food Delivery",
+    "version": "15.156.24",
+    "downloads": "50,000,000+",
+    "downloadsExact": 61535856,
+    "lastUpdated": "Mar 29, 2024",
+    "launchDate": "Mar 26, 2015",
+    "developer": "DoorDash",
+    "screenshots": [
+        "https://play-lh.example.com/url1",
+        "https://play-lh.example.com/url2",
+        "https://play-lh.example.com/url3",
+        "https://play-lh.example.com/url4",
+        "https://play-lh.example.com/url5",
+        "https://play-lh.example.com/url6"
+    ]
+    ],
+    "category": "Food & Drink",
+    "logo": "https://example.com/logo",
+    "banner": "https://example.com/banner",
+    "privacyPolicy": "https://www.doordash.com/privacy/",
+    "latestUpdateMessage": "Our mission is to deliver good...",
+    "website": "https://www.doordash.com/",
+    "supportEmail": "support@doordash.com",
+    "rating": "4.6",
+    "noOfUsersRated": "4,299,422",
+    "description": "Delivery anywhere you are...",
+}
+            </pre>
+        </section>
+
+        <section class="my-6">
+            <h2 class="text-2xl font-semibold">Integration with <a target="_blank" href="https://shields.io" class="text-blue-600">Shields.io</a></h2>
+            <p class="mt-2">Customize your README with dynamic badges for specific attributes. Utilize the following template:</p>
+            <pre class="bg-gray-200 p-2 rounded mt-2">![Badge](https://img.shields.io/endpoint?url=https://api.playstore.rajkumaar.co.in/&lt;ATTRIBUTE-NAME&gt;?id=&lt;PACKAGE-ID&gt;)</pre>
+            <p class="mt-2">Supported attributes:</p>
+            <ul class="list-disc list-inside">
+                <li><code>packageID</code></li>
+                <li><code>name</code></li>
+                <li><code>version</code></li>
+                <li><code>downloads</code></li>
+                <li><code>downloadsExact</code></li>
+                <li><code>lastUpdated</code></li>
+                <li><code>launchDate</code></li>
+                <li><code>developer</code></li>
+                <li><code>description</code></li>
+                <li><code>screenshots</code></li>
+                <li><code>category</code></li>
+                <li><code>logo</code></li>
+                <li><code>banner</code></li>
+                <li><code>privacyPolicy</code></li>
+                <li><code>latestUpdateMessage</code></li>
+                <li><code>website</code></li>
+                <li><code>supportEmail</code></li>
+                <li><code>rating</code></li>
+                <li><code>noOfUsersRated</code></li>
+            </ul>
+            <p class="mt-2">Explore customization options based on shields.io style parameters. Learn more <a target="_blank" href="https://shields.io/" class="text-blue-600">here</a>.</p>
+        </section>
+
+        <section class="my-6">
+            <h2 class="text-2xl font-semibold">Examples</h2>
+            <div class="mt-4">
+                <h3 class="text-xl font-semibold">Downloads</h3>
+                <pre class="bg-gray-200 p-2 rounded mt-2">![Downloads Badge](https://img.shields.io/endpoint?color=success&url=https://api.playstore.rajkumaar.co.in/downloads?id=com.dd.doordash)</pre>
+                <img src="https://img.shields.io/endpoint?color=success&url=https://api.playstore.rajkumaar.co.in/downloads?id=com.dd.doordash" alt="Downloads Badge" class="mt-2">
+            </div>
+            <div class="mt-4">
+                <h3 class="text-xl font-semibold">Version</h3>
+                <pre class="bg-gray-200 p-2 rounded mt-2">![Version Badge](https://img.shields.io/endpoint?color=blue&url=https://api.playstore.rajkumaar.co.in/version?id=com.dd.doordash)</pre>
+                <img src="https://img.shields.io/endpoint?color=blue&url=https://api.playstore.rajkumaar.co.in/version?id=com.dd.doordash" alt="Version Badge" class="mt-2">
+            </div>
+            <div class="mt-4">
+                <h3 class="text-xl font-semibold">Developer</h3>
+                <pre class="bg-gray-200 p-2 rounded mt-2">![Dev Badge](https://img.shields.io/endpoint?color=orange&style=for-the-badge&url=https://api.playstore.rajkumaar.co.in/developer?id=com.dd.doordash)</pre>
+                <img src="https://img.shields.io/endpoint?color=orange&style=for-the-badge&url=https://api.playstore.rajkumaar.co.in/developer?id=com.dd.doordash" alt="Dev Badge" class="mt-2">
+            </div>
+        </section>
+
+        <section class="my-6">
+            <h2 class="text-2xl font-semibold">Known Issues</h2>
+            <p class="mt-2">The API may respond with a <strong>0</strong> for <code>rating</code>/<code>noOfUsersRated</code> because the ratings on Google Play Store are specific to a country/region and the API is only able to fetch ratings that are local to the United States.</p>
+        </section>
+
+        <section class="my-6">
+            <h2 class="text-2xl font-semibold">License</h2>
+            <p class="mt-2">Find the license <a href="//github.com/rajkumaar23/playstore-api/blob/main/LICENSE" target="_blank" class="text-blue-600">here</a>.</p>
+        </section>
+    </main>
+</body>
+</html>

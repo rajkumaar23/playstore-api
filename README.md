@@ -1,6 +1,6 @@
-# Unofficial PlayStore API
+# Unofficial Google Play Store API
 
-**Explore android app metadata from PlayStore with ease!**
+**Explore android app metadata with ease!**
 
 [![Build & Deploy](https://github.com/rajkumaar23/playstore-api/actions/workflows/deploy.yaml/badge.svg)](https://github.com/rajkumaar23/playstore-api/actions/workflows/deploy.yaml)
 [![Nightly Test](https://github.com/rajkumaar23/playstore-api/actions/workflows/test.yaml/badge.svg)](https://github.com/rajkumaar23/playstore-api/actions/workflows/test.yaml)

@@ -10,12 +10,12 @@ import (
 )
 
 func getREADME(c *gin.Context) {
-	readme, err := os.ReadFile("README.md")
+	readme, err := os.ReadFile("page.html")
 	if err != nil {
 		c.Data(http.StatusInternalServerError, "text/html; charset=utf-8", []byte("an internal error occurred"))
 	}
 
-	c.Data(http.StatusOK, "text/html; charset=utf-8", mdToHTML(readme))
+	c.Data(http.StatusOK, "text/html; charset=utf-8", readme)
 }
 
 func getAllData(c *gin.Context) {
