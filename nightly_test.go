@@ -40,7 +40,7 @@ func TestAPIResponse(t *testing.T) {
 
 	// Assertions for each field
 	assert.Equal(t, data.PackageID, "com.dd.doordash", "Package ID mismatch")
-	assert.Equal(t, data.Name, "DoorDash - Food Delivery", "Name mismatch")
+	assert.Equal(t, data.Name, "DoorDash: Food, Grocery, More", "Name mismatch")
 	assert.GreaterOrEqual(t, data.Version, "15.188.6", "Version mismatch")
 	assert.Equal(t, data.Downloads, "50,000,000+", "Downloads mismatch")
 	assert.GreaterOrEqual(t, data.DownloadsExact, 67209570.0, "Downloads Exact mismatch")
