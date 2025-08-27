@@ -7,7 +7,6 @@ toolchain go1.23.3
 require (
 	github.com/PuerkitoBio/goquery v1.8.1
 	github.com/gin-gonic/gin v1.10.0
-	github.com/gomarkdown/markdown v0.0.0-20231115200524-a660076da3fd
 	github.com/joho/godotenv v1.5.1
 	github.com/redis/go-redis/v9 v9.3.0
 	github.com/stretchr/testify v1.9.0
