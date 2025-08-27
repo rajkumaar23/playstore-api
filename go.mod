@@ -10,7 +10,6 @@ require (
 	github.com/gomarkdown/markdown v0.0.0-20231115200524-a660076da3fd
 	github.com/joho/godotenv v1.5.1
 	github.com/redis/go-redis/v9 v9.3.0
-	github.com/rollbar/rollbar-go v1.4.5
 	github.com/stretchr/testify v1.9.0
 )
 
