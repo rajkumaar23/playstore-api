@@ -23,55 +23,72 @@ type playstoreDataResponse struct {
 }
 
 func newPlaystoreDataResponse(packageID string, data []interface{}) *playstoreDataResponse {
+	latestUpdateMessage := ""
+	if val, ok := getAttributeFromData[map[string]interface{}](data, 1, 2, 112)["145"]; ok && val != nil {
+		if v, ok := val.([]interface{}); ok {
+			latestUpdateMessage = getAttributeFromData[string](v, 1, 1)
+		}
+	}
+	if latestUpdateMessage == "" {
+		latestUpdateMessage = getAttributeFromData[string](data, 1, 2, 144, 1, 1)
+	}
+
+	lastUpdated := ""
+	if val, ok := getAttributeFromData[map[string]interface{}](data, 1, 2, 112)["146"]; ok && val != nil {
+		if v, ok := val.([]interface{}); ok {
+			lastUpdated = getAttributeFromData[string](v, 0, 0)
+		}
+	}
+	if lastUpdated == "" {
+		lastUpdated = getAttributeFromData[string](data, 1, 2, 145, 0, 0)
+	}
+
+	version := ""
+	if val, ok := getAttributeFromData[map[string]interface{}](data, 1, 2, 112)["141"]; ok && val != nil {
+		if v, ok := val.([]interface{}); ok {
+			version = getAttributeFromData[string](v, 0, 0, 0)
+		}
+	}
+	if version == "" {
+		version = getAttributeFromData[string](data, 1, 2, 140, 0, 0, 0)
+	}
+
 	return &playstoreDataResponse{
 		PackageID:           packageID,
-		LaunchDate:          getStringFromData(data, 1, 2, 10, 0),
-		Name:                getStringFromData(data, 1, 2, 0, 0),
-		Category:            getStringFromData(data, 1, 2, 79, 0, 0, 0),
-		Developer:           getStringFromData(data, 1, 2, 37, 0),
-		Description:         getStringFromData(data, 1, 2, 72, 0, 1),
-		Downloads:           getStringFromData(data, 1, 2, 13, 0),
-		Logo:                getStringFromData(data, 1, 2, 95, 0, 3, 2),
-		Banner:              getStringFromData(data, 1, 2, 96, 0, 3, 2),
-		PrivacyPolicy:       getStringFromData(data, 1, 2, 99, 0, 5, 2),
-		LastUpdated:         getStringFromData(data, 1, 2, 145, 0, 0),
-		LatestUpdateMessage: getStringFromData(data, 1, 2, 144, 1, 1),
-		Version:             getStringFromData(data, 1, 2, 140, 0, 0, 0),
-		Website:             getStringFromData(data, 1, 2, 69, 0, 5, 2),
-		SupportEmail:        getStringFromData(data, 1, 2, 69, 1, 0),
+		LaunchDate:          getAttributeFromData[string](data, 1, 2, 10, 0),
+		Name:                getAttributeFromData[string](data, 1, 2, 0, 0),
+		Category:            getAttributeFromData[string](data, 1, 2, 79, 0, 0, 0),
+		Developer:           getAttributeFromData[string](data, 1, 2, 37, 0),
+		Description:         getAttributeFromData[string](data, 1, 2, 72, 0, 1),
+		Downloads:           getAttributeFromData[string](data, 1, 2, 13, 0),
+		Logo:                getAttributeFromData[string](data, 1, 2, 95, 0, 3, 2),
+		Banner:              getAttributeFromData[string](data, 1, 2, 96, 0, 3, 2),
+		PrivacyPolicy:       getAttributeFromData[string](data, 1, 2, 99, 0, 5, 2),
+		LatestUpdateMessage: latestUpdateMessage,
+		LastUpdated:         lastUpdated,
+		Version:             version,
+		Website:             getAttributeFromData[string](data, 1, 2, 69, 0, 5, 2),
+		SupportEmail:        getAttributeFromData[string](data, 1, 2, 69, 1, 0),
 		Screenshots:         parseScreenshots(data),
-		DownloadsExact:      getFloat64FromData(data, 1, 2, 13, 2),
-		Rating:              getStringFromData(data, 1, 2, 51, 0, 0),
-		NoOfUsersRated:      getStringFromData(data, 1, 2, 51, 2, 0),
+		DownloadsExact:      getAttributeFromData[float64](data, 1, 2, 13, 2),
+		Rating:              getAttributeFromData[string](data, 1, 2, 51, 0, 0),
+		NoOfUsersRated:      getAttributeFromData[string](data, 1, 2, 51, 2, 0),
 	}
 }
 
-func getStringFromData(data []interface{}, indices ...int) string {
+func getAttributeFromData[T any](data []interface{}, indices ...int) T {
 	var currentData []interface{} = data
+	var zero T
 	for i, index := range indices {
-		if currentData == nil || currentData[index] == nil || index >= len(currentData) {
-			return ""
+		if currentData == nil || index >= len(currentData) || currentData[index] == nil {
+			return zero
 		}
 		if i+1 == len(indices) {
-			return currentData[index].(string)
+			return currentData[index].(T)
 		}
 		currentData = currentData[index].([]interface{})
 	}
-	return ""
-}
-
-func getFloat64FromData(data []interface{}, indices ...int) float64 {
-	var currentData []interface{} = data
-	for i, index := range indices {
-		if currentData == nil || currentData[index] == nil || index >= len(currentData) {
-			return 0
-		}
-		if i+1 == len(indices) {
-			return currentData[index].(float64)
-		}
-		currentData = currentData[index].([]interface{})
-	}
-	return 0
+	return zero
 }
 
 func parseScreenshots(data []interface{}) []string {

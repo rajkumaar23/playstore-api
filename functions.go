@@ -7,7 +7,6 @@ import (
 	"io"
 	"log"
 	"net/http"
-	"os/exec"
 	"regexp"
 	"strings"
 	"time"
@@ -97,16 +96,4 @@ func extractText(input string) (string, error) {
 
 	result := matches[1]
 	return result, nil
-}
-
-func getCurrentGitHeadHash() string {
-	cmd := exec.Command("git", "rev-parse", "--short", "HEAD")
-	stdout, err := cmd.Output()
-
-	if err != nil {
-		log.Printf("error while reading git HEAD hash : %s\n", err.Error())
-		return "undefined"
-	}
-
-	return string(stdout)
 }
