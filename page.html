@@ -64,6 +64,23 @@
         </section>
 
         <section class="my-6">
+            <h2 class="text-2xl font-semibold">Known Issues</h2>
+            <p class="mt-2">
+                The API might return <code class="bg-gray-100 px-1.5 py-0.5 rounded text-sm font-mono">0</code> for 
+                <code class="bg-gray-100 px-1.5 py-0.5 rounded text-sm font-mono">rating</code> and 
+                <code class="bg-gray-100 px-1.5 py-0.5 rounded text-sm font-mono">noOfUsersRated</code> since 
+                Google Play Store ratings are region-specific. To retrieve ratings for a particular country, add 
+                <code class="bg-gray-100 px-1.5 py-0.5 rounded text-sm font-mono">&gl=COUNTRY_CODE</code> to the URL. 
+                For instance, use <code class="bg-gray-100 px-1.5 py-0.5 rounded text-sm font-mono">&gl=IN</code> to 
+                get ratings for an app in India.
+            </p>
+            <p class="mt-3">
+                <span class="font-semibold">Example:</span>
+                <code class="block mt-1 bg-gray-100 px-3 py-2 rounded text-sm font-mono overflow-x-auto">https://play.rajkumaar.co.in/json?id=in.co.rajkumaar.amritarepo&gl=IN</code>
+            </p>
+        </section>        
+
+        <section class="my-6">
             <h2 class="text-2xl font-semibold">Integration with <a target="_blank" href="https://shields.io" class="text-blue-600">Shields.io</a></h2>
             <p class="mt-2">Customize your README with dynamic badges for specific attributes. Utilize the following template:</p>
             <pre class="bg-gray-200 p-2 rounded mt-2">![Badge](https://img.shields.io/endpoint?url=https://play.rajkumaar.co.in/&lt;ATTRIBUTE-NAME&gt;?id=&lt;PACKAGE-ID&gt;)</pre>
@@ -109,11 +126,6 @@
                 <pre class="bg-gray-200 p-2 rounded mt-2">![Dev Badge](https://img.shields.io/endpoint?color=orange&style=for-the-badge&url=https://play.rajkumaar.co.in/developer?id=com.dd.doordash)</pre>
                 <img src="https://img.shields.io/endpoint?color=orange&style=for-the-badge&url=https://play.rajkumaar.co.in/developer?id=com.dd.doordash" alt="Dev Badge" class="mt-2">
             </div>
-        </section>
-
-        <section class="my-6">
-            <h2 class="text-2xl font-semibold">Known Issues</h2>
-            <p class="mt-2">The API may respond with a <strong>0</strong> for <code>rating</code>/<code>noOfUsersRated</code> because the ratings on Google Play Store are specific to a country/region and the API is only able to fetch ratings that are local to the United States.</p>
         </section>
 
         <section class="my-6">
