@@ -15,37 +15,42 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
-func fetchHTML(packageID string) (string, int) {
-	cachedHTML, err := rdb.Get(ctx, packageID).Result()
+func fetchHTML(packageID, geoLocation string) (string, int) {
+	if geoLocation == "" {
+		geoLocation = "US"
+	}
+
+	cacheID := fmt.Sprintf("%s-%s", packageID, geoLocation)
+	cachedHTML, err := rdb.Get(ctx, cacheID).Result()
 	if err == nil {
 		return cachedHTML, http.StatusOK
 	} else if err != redis.Nil {
-		log.Printf("redis error for id = %s", packageID)
+		log.Printf("redis error for id = %s", cacheID)
 		return "", http.StatusInternalServerError
 	}
 
-	playstoreURL := fmt.Sprintf("https://play.google.com/store/apps/details?id=%s", packageID)
+	playstoreURL := fmt.Sprintf("https://play.google.com/store/apps/details?id=%s&gl=%s", packageID, geoLocation)
 	res, err := http.Get(playstoreURL)
 	if err != nil {
-		log.Printf("error requesting playstore URL for id = %s, err = %s\n", packageID, err.Error())
+		log.Printf("error requesting playstore URL for id = %s, gl = %s, err = %s\n", packageID, geoLocation, err.Error())
 		return "", http.StatusInternalServerError
 	}
 
 	defer res.Body.Close()
 	if res.StatusCode != 200 {
-		log.Printf("non-200 status code for id = %s, status = %s\n", packageID, res.Status)
+		log.Printf("non-200 status code for id = %s, gl = %s, status = %s\n", packageID, geoLocation, res.Status)
 		return "", res.StatusCode
 	}
 
 	bodyBytes, err := io.ReadAll(res.Body)
 	if err != nil {
-		log.Printf("error reading playstore response for id = %s, err = %s\n", packageID, err.Error())
+		log.Printf("error reading playstore response for id = %s, gl = %s, err = %s\n", packageID, geoLocation, err.Error())
 		return "", http.StatusInternalServerError
 	}
 
-	err = rdb.Set(ctx, packageID, string(bodyBytes), time.Hour).Err()
+	err = rdb.Set(ctx, cacheID, string(bodyBytes), time.Hour).Err()
 	if err != nil {
-		log.Printf("redis set key failed for id = %s, err = %s", packageID, err.Error())
+		log.Printf("redis set key failed for id = %s, gl = %s, err = %s", packageID, geoLocation, err.Error())
 	}
 	return string(bodyBytes), res.StatusCode
 }

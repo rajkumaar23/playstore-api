@@ -45,6 +45,12 @@ Sample JSON response with all possible details:
 }
 ```
 
+### Known Issues
+
+The API might return `0` for `rating` and `noOfUsersRated` since Google Play Store ratings are region-specific. To retrieve ratings for a particular country, add `&gl=COUNTRY_CODE` to the URL. For instance, use `&gl=IN` to get ratings for an app in India.
+
+> Example : https://play.rajkumaar.co.in/json?id=in.co.rajkumaar.amritarepo&gl=IN
+
 ## Integration with [Shields.io](https://shields.io)
 Customize your README with dynamic badges for specific attributes. Utilize the following template:
 ```markdown
@@ -93,9 +99,6 @@ Developer
 ```
 ![Dev Badge](https://img.shields.io/endpoint?color=orange&style=for-the-badge&url=https://play.rajkumaar.co.in/developer?id=com.dd.doordash)
 
-### Known Issues
-
-- The API may respond with a **0** for `rating`/`noOfUsersRated` because the ratings on Google Play Store are specific to a country/region and the API is only able to fetch ratings that are local to the United States.
 
 ### License
 Find the license [here](LICENSE)

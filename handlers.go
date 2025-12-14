@@ -25,7 +25,7 @@ func getAllData(c *gin.Context) {
 		return
 	}
 
-	resBody, statusCode := fetchHTML(packageID)
+	resBody, statusCode := fetchHTML(packageID, c.Query("gl"))
 	if statusCode == http.StatusNotFound {
 		c.IndentedJSON(http.StatusNotFound, gin.H{"message": "package id is invalid"})
 		return
@@ -49,7 +49,7 @@ func getDataByKey(c *gin.Context) {
 		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "package id is mandatory"})
 		return
 	}
-	resBody, statusCode := fetchHTML(packageID)
+	resBody, statusCode := fetchHTML(packageID, c.Query("gl"))
 	if statusCode == http.StatusNotFound {
 		c.IndentedJSON(http.StatusNotFound, gin.H{"message": "package id is invalid"})
 		return
