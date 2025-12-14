@@ -12,7 +12,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-const apiURL = "https://play.rajkumaar.co.in/json?id=com.dd.doordash"
+const apiBaseURL = "https://play.rajkumaar.co.in/json?id="
 
 func isValidDate(date string) error {
 	_, err := time.Parse("Jan 2, 2006", date)
@@ -20,7 +20,7 @@ func isValidDate(date string) error {
 }
 
 func TestAPIResponse(t *testing.T) {
-	resp, err := http.Get(apiURL)
+	resp, err := http.Get(apiBaseURL + "com.dd.doordash")
 	if err != nil {
 		t.Errorf("Failed to fetch API data: %v", err)
 		return
@@ -70,4 +70,27 @@ func TestAPIResponse(t *testing.T) {
 	assert.Equal(t, data.SupportEmail, "support@doordash.com", "Support email mismatch")
 	assert.True(t, data.Rating > "0.0" && data.Rating < "5.0", "Rating mismatch")
 	assert.GreaterOrEqual(t, data.NoOfUsersRated, "4,712,796", "No of users rated mismatch")
+}
+
+func TestGeoLocationParameter(t *testing.T) {
+	respUS, err := http.Get(apiBaseURL + "in.co.rajkumaar.amritarepo&gl=IN")
+	if err != nil {
+		t.Errorf("Failed to fetch API data: %v", err)
+		return
+	}
+	defer respUS.Body.Close()
+
+	if respUS.StatusCode != http.StatusOK {
+		t.Errorf("API request failed with status code: %d", respUS.StatusCode)
+		return
+	}
+
+	var data playstoreDataResponse
+	if err := json.NewDecoder(respUS.Body).Decode(&data); err != nil {
+		t.Errorf("Failed to decode JSON response: %v", err)
+		return
+	}
+
+	assert.True(t, data.Rating > "0.0" && data.Rating < "5.0", "Rating mismatch")
+	assert.GreaterOrEqual(t, data.NoOfUsersRated, "100", "No of users rated mismatch")
 }
