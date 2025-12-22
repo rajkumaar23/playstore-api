@@ -1,4 +1,6 @@
 name: nightly test
+permissions:
+  contents: read
 
 on:
   schedule:
