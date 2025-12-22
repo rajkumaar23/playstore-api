@@ -1,28 +1,33 @@
-package main
+package models
 
-type playstoreDataResponse struct {
-	PackageID           string   `json:"packageID" api:"Package ID"`
-	Name                string   `json:"name" api:"Name"`
-	Version             string   `json:"version" api:"Version"`
-	Downloads           string   `json:"downloads" api:"Downloads"`
-	DownloadsExact      float64  `json:"downloadsExact" api:"Downloads"`
-	LastUpdated         string   `json:"lastUpdated" api:"Last Updated On"`
-	LaunchDate          string   `json:"launchDate" api:"Launched On"`
-	Developer           string   `json:"developer" api:"Developer"`
-	Description         string   `json:"description" api:"Description"`
-	Screenshots         []string `json:"screenshots" api:"Screenshots"`
-	Category            string   `json:"category" api:"Category"`
-	Logo                string   `json:"logo" api:"Logo"`
-	Banner              string   `json:"banner" api:"Banner"`
-	PrivacyPolicy       string   `json:"privacyPolicy" api:"Privacy Policy"`
-	LatestUpdateMessage string   `json:"latestUpdateMessage" api:"Latest Update Message"`
-	Website             string   `json:"website" api:"Website"`
-	SupportEmail        string   `json:"supportEmail" api:"Support Email"`
-	Rating              string   `json:"rating" api:"Rating"`
-	NoOfUsersRated      string   `json:"noOfUsersRated" api:"No of users rated"`
+import (
+	"reflect"
+	"strings"
+)
+
+type PlaystoreData struct {
+	PackageID           string   `json:"packageID" shields:"Package ID"`
+	Name                string   `json:"name" shields:"Name"`
+	Version             string   `json:"version" shields:"Version"`
+	Downloads           string   `json:"downloads" shields:"Downloads"`
+	DownloadsExact      float64  `json:"downloadsExact" shields:"Downloads"`
+	LastUpdated         string   `json:"lastUpdated" shields:"Last Updated On"`
+	LaunchDate          string   `json:"launchDate" shields:"Launched On"`
+	Developer           string   `json:"developer" shields:"Developer"`
+	Description         string   `json:"description" shields:"Description"`
+	Screenshots         []string `json:"screenshots" shields:"Screenshots"`
+	Category            string   `json:"category" shields:"Category"`
+	Logo                string   `json:"logo" shields:"Logo"`
+	Banner              string   `json:"banner" shields:"Banner"`
+	PrivacyPolicy       string   `json:"privacyPolicy" shields:"Privacy Policy"`
+	LatestUpdateMessage string   `json:"latestUpdateMessage" shields:"Latest Update Message"`
+	Website             string   `json:"website" shields:"Website"`
+	SupportEmail        string   `json:"supportEmail" shields:"Support Email"`
+	Rating              string   `json:"rating" shields:"Rating"`
+	NoOfUsersRated      string   `json:"noOfUsersRated" shields:"# of users rated"`
 }
 
-func newPlaystoreDataResponse(packageID string, data []interface{}) *playstoreDataResponse {
+func NewPlaystoreData(packageID string, data []interface{}) *PlaystoreData {
 	latestUpdateMessage := ""
 	if val, ok := getAttributeFromData[map[string]interface{}](data, 1, 2, 112)["145"]; ok && val != nil {
 		if v, ok := val.([]interface{}); ok {
@@ -53,7 +58,7 @@ func newPlaystoreDataResponse(packageID string, data []interface{}) *playstoreDa
 		version = getAttributeFromData[string](data, 1, 2, 140, 0, 0, 0)
 	}
 
-	return &playstoreDataResponse{
+	return &PlaystoreData{
 		PackageID:           packageID,
 		LaunchDate:          getAttributeFromData[string](data, 1, 2, 10, 0),
 		Name:                getAttributeFromData[string](data, 1, 2, 0, 0),
@@ -74,6 +79,16 @@ func newPlaystoreDataResponse(packageID string, data []interface{}) *playstoreDa
 		Rating:              getAttributeFromData[string](data, 1, 2, 51, 0, 0),
 		NoOfUsersRated:      getAttributeFromData[string](data, 1, 2, 51, 2, 0),
 	}
+}
+
+func (p *PlaystoreData) GetField(key string) (string, string) {
+	val := reflect.ValueOf(*p)
+	for i := 0; i < val.Type().NumField(); i++ {
+		if strings.EqualFold(key, val.Type().Field(i).Tag.Get("json")) {
+			return val.Type().Field(i).Tag.Get("shields"), val.Field(i).Interface().(string)
+		}
+	}
+	return "", ""
 }
 
 func getAttributeFromData[T any](data []interface{}, indices ...int) T {

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"playstore-api/internal/models"
 	"strings"
 	"testing"
 	"time"
@@ -32,7 +33,7 @@ func TestAPIResponse(t *testing.T) {
 		return
 	}
 
-	var data playstoreDataResponse
+	var data models.PlaystoreData
 	if err := json.NewDecoder(resp.Body).Decode(&data); err != nil {
 		t.Errorf("Failed to decode JSON response: %v", err)
 		return
@@ -85,7 +86,7 @@ func TestGeoLocationParameter(t *testing.T) {
 		return
 	}
 
-	var data playstoreDataResponse
+	var data models.PlaystoreData
 	if err := json.NewDecoder(respUS.Body).Decode(&data); err != nil {
 		t.Errorf("Failed to decode JSON response: %v", err)
 		return

@@ -1,14 +1,17 @@
-FROM alpine:latest
+FROM golang:1.24 AS builder
 
-RUN apk add --no-cache git make musl-dev go
-ENV GOROOT=/usr/lib/go
-ENV GOPATH=/go
-ENV PATH=/go/bin:$PATH
-RUN mkdir -p ${GOPATH}/src ${GOPATH}/bin
+WORKDIR /src
 
-RUN mkdir /app
-COPY . /app/
-WORKDIR /app
-RUN go build -o playstore-api
+COPY go.mod go.sum ./
+RUN go mod download
 
-CMD ["./playstore-api"]
+COPY . .
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
+    go build -ldflags="-s -w" -o /playstore-api ./cmd/playstore-api
+
+
+FROM alpine:3.18 AS runtime
+RUN apk add --no-cache ca-certificates
+COPY --from=builder /playstore-api /usr/local/bin/playstore-api
+
+ENTRYPOINT ["/usr/local/bin/playstore-api"]

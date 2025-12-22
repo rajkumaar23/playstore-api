@@ -3,9 +3,13 @@ version: '3'
 services:
   app:
     image: ghcr.io/rajkumaar23/playstore-api:main
+    container_name: playstore-api-app
     restart: always
-    volumes:
-      - .env:/app/.env
+    environment:
+      - REDIS_ADDRESS=redis:6379
+      - SERVER_PORT=5003
+      - GIN_MODE="release"
+      - DEFAULT_GL="US"
     ports:
       - "5003:5003"
     depends_on:
@@ -15,6 +19,7 @@ services:
 
   redis:
     image: redis:latest
+    container_name: playstore-api-redis
     restart: always
     networks:
       - playstore-api-network
