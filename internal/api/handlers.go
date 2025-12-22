@@ -2,14 +2,17 @@ package api
 
 import (
 	_ "embed"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"playstore-api/internal/cache"
 	"playstore-api/internal/config"
 	"playstore-api/internal/models"
 	"playstore-api/internal/scraper"
+	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/redis/go-redis/v9"
 )
 
 type Handler struct {
@@ -73,6 +76,21 @@ func (h *Handler) getData(c *gin.Context) (*models.PlaystoreData, int, error) {
 		gl = h.Config.DefaultGeoLocation
 	}
 
+	cacheID := fmt.Sprintf("%s-%s", packageID, gl)
+	cachedData, err := h.Cache.Get(c.Request.Context(), cacheID)
+	if err == nil {
+		var data *models.PlaystoreData
+		unmarshalErr := json.Unmarshal([]byte(cachedData), data)
+		if unmarshalErr != nil {
+			return nil, http.StatusInternalServerError, fmt.Errorf("failed to unmarshal data from cache")
+		}
+		return data, http.StatusOK, nil
+	}
+
+	if err != redis.Nil {
+		return nil, http.StatusInternalServerError, fmt.Errorf("failed to fetch data from cache")
+	}
+
 	html, code, err := h.Scraper.FetchHTML(c.Request.Context(), packageID, gl)
 	if err != nil {
 		return nil, code, fmt.Errorf("failed to fetch html")
@@ -80,6 +98,15 @@ func (h *Handler) getData(c *gin.Context) (*models.PlaystoreData, int, error) {
 	data, err := h.Scraper.Parse(packageID, html)
 	if err != nil {
 		return nil, http.StatusInternalServerError, fmt.Errorf("failed to parse html")
+	}
+
+	b, err := json.Marshal(data)
+	if err != nil {
+		return nil, http.StatusInternalServerError, fmt.Errorf("failed to marshal data for cache")
+	}
+	err = h.Cache.Set(c.Request.Context(), cacheID, string(b), time.Hour)
+	if err != nil {
+		return nil, http.StatusInternalServerError, fmt.Errorf("failed to set data in cache")
 	}
 
 	return data, http.StatusOK, nil
