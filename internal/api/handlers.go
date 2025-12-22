@@ -4,6 +4,7 @@ import (
 	_ "embed"
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"playstore-api/internal/cache"
 	"playstore-api/internal/config"
@@ -42,7 +43,8 @@ func (h *Handler) GetFavicon(c *gin.Context) {
 func (h *Handler) GetAllData(c *gin.Context) {
 	data, code, err := h.getData(c)
 	if err != nil {
-		c.JSON(code, gin.H{"error": err.Error()})
+		log.Printf("failed to get all data: %s", err.Error())
+		c.JSON(code, gin.H{"error": "failed to get data"})
 		return
 	}
 	c.JSON(http.StatusOK, data)
@@ -52,7 +54,8 @@ func (h *Handler) GetDataByKey(c *gin.Context) {
 	key := c.Params.ByName("key")
 	data, code, err := h.getData(c)
 	if err != nil {
-		c.JSON(code, gin.H{"error": err.Error()})
+		log.Printf("failed to get data by key: %s", err.Error())
+		c.JSON(code, gin.H{"error": "failed to get data by key"})
 		return
 	}
 	label, message := data.GetField(key)
@@ -79,34 +82,34 @@ func (h *Handler) getData(c *gin.Context) (*models.PlaystoreData, int, error) {
 	cacheID := fmt.Sprintf("%s-%s", packageID, gl)
 	cachedData, err := h.Cache.Get(c.Request.Context(), cacheID)
 	if err == nil {
-		var data *models.PlaystoreData
-		unmarshalErr := json.Unmarshal([]byte(cachedData), data)
+		var data models.PlaystoreData
+		unmarshalErr := json.Unmarshal([]byte(cachedData), &data)
 		if unmarshalErr != nil {
-			return nil, http.StatusInternalServerError, fmt.Errorf("failed to unmarshal data from cache")
+			return nil, http.StatusInternalServerError, fmt.Errorf("failed to unmarshal data from cache: %w", unmarshalErr)
 		}
-		return data, http.StatusOK, nil
+		return &data, http.StatusOK, nil
 	}
 
 	if err != redis.Nil {
-		return nil, http.StatusInternalServerError, fmt.Errorf("failed to fetch data from cache")
+		return nil, http.StatusInternalServerError, fmt.Errorf("failed to fetch data from cache: %w", err)
 	}
 
 	html, code, err := h.Scraper.FetchHTML(c.Request.Context(), packageID, gl)
 	if err != nil {
-		return nil, code, fmt.Errorf("failed to fetch html")
+		return nil, code, fmt.Errorf("failed to fetch html: %w", err)
 	}
 	data, err := h.Scraper.Parse(packageID, html)
 	if err != nil {
-		return nil, http.StatusInternalServerError, fmt.Errorf("failed to parse html")
+		return nil, http.StatusInternalServerError, fmt.Errorf("failed to parse html: %w", err)
 	}
 
-	b, err := json.Marshal(data)
+	b, err := json.Marshal(*data)
 	if err != nil {
-		return nil, http.StatusInternalServerError, fmt.Errorf("failed to marshal data for cache")
+		return nil, http.StatusInternalServerError, fmt.Errorf("failed to marshal data for cache: %w", err)
 	}
 	err = h.Cache.Set(c.Request.Context(), cacheID, string(b), time.Hour)
 	if err != nil {
-		return nil, http.StatusInternalServerError, fmt.Errorf("failed to set data in cache")
+		return nil, http.StatusInternalServerError, fmt.Errorf("failed to set data in cache: %w", err)
 	}
 
 	return data, http.StatusOK, nil
