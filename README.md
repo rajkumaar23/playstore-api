@@ -2,8 +2,8 @@
 
 **Explore android app metadata with ease!**
 
-[![Build & Deploy](https://github.com/rajkumaar23/playstore-api/actions/workflows/deploy.yaml/badge.svg)](https://github.com/rajkumaar23/playstore-api/actions/workflows/deploy.yaml)
-[![Nightly Test](https://github.com/rajkumaar23/playstore-api/actions/workflows/test.yaml/badge.svg)](https://github.com/rajkumaar23/playstore-api/actions/workflows/test.yaml)
+[![build image](https://github.com/rajkumaar23/playstore-api/actions/workflows/build.yaml/badge.svg)](https://github.com/rajkumaar23/playstore-api/actions/workflows/build.yaml)
+[![nightly test](https://github.com/rajkumaar23/playstore-api/actions/workflows/test.yaml/badge.svg)](https://github.com/rajkumaar23/playstore-api/actions/workflows/test.yaml)
 
 ## Usage
 
