@@ -13,7 +13,6 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/redis/go-redis/v9"
 )
 
 type Handler struct {
@@ -88,10 +87,6 @@ func (h *Handler) getData(c *gin.Context) (*models.PlaystoreData, int, error) {
 			return nil, http.StatusInternalServerError, fmt.Errorf("failed to unmarshal data from cache: %w", unmarshalErr)
 		}
 		return &data, http.StatusOK, nil
-	}
-
-	if err != redis.Nil {
-		return nil, http.StatusInternalServerError, fmt.Errorf("failed to fetch data from cache: %w", err)
 	}
 
 	html, code, err := h.Scraper.FetchHTML(c.Request.Context(), packageID, gl)
