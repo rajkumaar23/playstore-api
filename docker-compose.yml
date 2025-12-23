@@ -8,6 +8,7 @@ services:
     environment:
       - REDIS_ADDRESS=redis:6379
       - SERVER_PORT=5003
+      - METRICS_PORT=5004
       - GIN_MODE="release"
       - DEFAULT_GL="US"
     ports:
@@ -23,6 +24,15 @@ services:
     restart: always
     networks:
       - playstore-api-network
+  
+  prometheus:
+    image: prom/prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
 
 networks:
   playstore-api-network:
