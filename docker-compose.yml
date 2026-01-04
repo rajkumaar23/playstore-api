@@ -9,8 +9,8 @@ services:
       - REDIS_ADDRESS=redis:6379
       - SERVER_PORT=5003
       - METRICS_PORT=5004
-      - GIN_MODE="release"
-      - DEFAULT_GL="US"
+      - GIN_MODE=release
+      - DEFAULT_GL=US
     ports:
       - "5003:5003"
     depends_on:
