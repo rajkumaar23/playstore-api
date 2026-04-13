@@ -49,7 +49,7 @@ func NewPlaystoreData(packageID string, data []interface{}) *PlaystoreData {
 	}
 
 	version := ""
-	if val, ok := getAttributeFromData[map[string]interface{}](data, 1, 2, 112)["141"]; ok && val != nil {
+	if val, ok := getAttributeFromData[map[string]interface{}](data, 1, 2, 103)["141"]; ok && val != nil {
 		if v, ok := val.([]interface{}); ok {
 			version = getAttributeFromData[string](v, 0, 0, 0)
 		}
