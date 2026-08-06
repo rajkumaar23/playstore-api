@@ -16,8 +16,12 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// How long to allow a cache write, once it is no longer tied to the request.
-const cacheWriteTimeout = 5 * time.Second
+const (
+	// How long to allow a scrape, once it is no longer tied to the request.
+	scrapeTimeout = 15 * time.Second
+	// How long to allow a cache write, once it is no longer tied to the request.
+	cacheWriteTimeout = 5 * time.Second
+)
 
 type Handler struct {
 	Scraper *scraper.PlaystoreScraper
@@ -93,7 +97,14 @@ func (h *Handler) getData(c *gin.Context) (*models.PlaystoreData, int, error) {
 		return &data, http.StatusOK, nil
 	}
 
-	html, code, err := h.Scraper.FetchHTML(c.Request.Context(), packageID, gl)
+	// Detached for the same reason as the cache write below: a scrape already
+	// in flight should finish and populate the cache even if the caller has
+	// gone away. Bounded so a slow upstream cannot pin the goroutine, and its
+	// multi-megabyte buffers, indefinitely.
+	scrapeCtx, cancelScrape := context.WithTimeout(context.WithoutCancel(c.Request.Context()), scrapeTimeout)
+	defer cancelScrape()
+
+	html, code, err := h.Scraper.FetchHTML(scrapeCtx, packageID, gl)
 	if err != nil {
 		return nil, code, fmt.Errorf("failed to fetch html: %w", err)
 	}

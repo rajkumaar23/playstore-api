@@ -9,6 +9,7 @@ import (
 	"playstore-api/internal/models"
 	"regexp"
 	"strings"
+	"time"
 
 	"github.com/PuerkitoBio/goquery"
 )
@@ -17,15 +18,24 @@ type PlaystoreScraper struct {
 	httpClient *http.Client
 }
 
+// Upper bound on a single Play Store fetch, in case the caller's context
+// carries no deadline of its own.
+const fetchTimeout = 15 * time.Second
+
 func NewPlaystoreScraper() *PlaystoreScraper {
 	return &PlaystoreScraper{
-		httpClient: &http.Client{},
+		httpClient: &http.Client{Timeout: fetchTimeout},
 	}
 }
 
 func (s *PlaystoreScraper) FetchHTML(ctx context.Context, packageID, gl string) (string, int, error) {
 	playstoreURL := fmt.Sprintf("https://play.google.com/store/apps/details?id=%s&gl=%s", packageID, gl)
-	res, err := http.Get(playstoreURL)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, playstoreURL, nil)
+	if err != nil {
+		return "", http.StatusInternalServerError, fmt.Errorf("error building request for '%s': %w", playstoreURL, err)
+	}
+
+	res, err := s.httpClient.Do(req)
 	if err != nil {
 		return "", http.StatusInternalServerError, fmt.Errorf("error making GET request to '%s': %w", playstoreURL, err)
 	}
