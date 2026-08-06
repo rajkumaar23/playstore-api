@@ -1,5 +1,3 @@
-version: '3'
-
 services:
   app:
     image: ghcr.io/rajkumaar23/playstore-api:main
@@ -11,20 +9,45 @@ services:
       - METRICS_PORT=5004
       - GIN_MODE=release
       - DEFAULT_GL=US
+      - CACHE_TTL=24h
+      # If you constrain this container's memory, also set GOMEMLIMIT to a
+      # value below that cap. Go does not read cgroup limits, so without it
+      # the heap grows past the cap and the kernel OOM-kills the process.
+      # - GOMEMLIMIT=224MiB
     ports:
       - "5003:5003"
     depends_on:
       - redis
     networks:
       - playstore-api-network
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
 
   redis:
-    image: redis:latest
+    image: redis:7-alpine
     container_name: playstore-api-redis
     restart: always
+    # Pure cache holding TTL'd entries: evict the coldest keys under memory
+    # pressure rather than expiring hot ones on a timer, and skip RDB/AOF
+    # entirely so there is no snapshot fork or write amplification.
+    # Set --maxmemory to suit your host; without it allkeys-lru never engages.
+    command: >
+      redis-server
+      --maxmemory 256mb
+      --maxmemory-policy allkeys-lru
+      --save ""
+      --appendonly no
     networks:
       - playstore-api-network
-  
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
+
   prometheus:
     image: prom/prometheus
     ports:
