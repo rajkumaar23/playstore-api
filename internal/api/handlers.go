@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"golang.org/x/sync/singleflight"
 )
 
 const (
@@ -27,6 +28,16 @@ type Handler struct {
 	Scraper *scraper.PlaystoreScraper
 	Cache   cache.Cache
 	Config  *config.Config
+
+	// Deduplicates in-flight scrapes by cache key.
+	scrapes singleflight.Group
+}
+
+// scrapeResult carries the status code alongside the payload, since
+// singleflight only propagates a single value and an error.
+type scrapeResult struct {
+	data *models.PlaystoreData
+	code int
 }
 
 func NewHandler(s *scraper.PlaystoreScraper, c cache.Cache, cfg *config.Config) *Handler {
@@ -97,17 +108,36 @@ func (h *Handler) getData(c *gin.Context) (*models.PlaystoreData, int, error) {
 		return &data, http.StatusOK, nil
 	}
 
-	// Detached for the same reason as the cache write below: a scrape already
+	// Detached for the same reason as the cache write in scrape: work already
 	// in flight should finish and populate the cache even if the caller has
 	// gone away. Bounded so a slow upstream cannot pin the goroutine, and its
 	// multi-megabyte buffers, indefinitely.
 	scrapeCtx, cancelScrape := context.WithTimeout(context.WithoutCancel(c.Request.Context()), scrapeTimeout)
 	defer cancelScrape()
 
-	html, code, err := h.Scraper.FetchHTML(scrapeCtx, packageID, gl)
+	// Collapse concurrent misses for the same key into one scrape. A popular
+	// package requested by many clients at once, or any traffic arriving
+	// against a cold cache, would otherwise fetch and parse the same page
+	// once per caller.
+	res, err, _ := h.scrapes.Do(cacheID, func() (interface{}, error) {
+		data, code, err := h.scrape(scrapeCtx, packageID, gl, cacheID)
+		return scrapeResult{data: data, code: code}, err
+	})
+
+	result := res.(scrapeResult)
+	if err != nil {
+		return nil, result.code, err
+	}
+
+	return result.data, http.StatusOK, nil
+}
+
+func (h *Handler) scrape(ctx context.Context, packageID, gl, cacheID string) (*models.PlaystoreData, int, error) {
+	html, code, err := h.Scraper.FetchHTML(ctx, packageID, gl)
 	if err != nil {
 		return nil, code, fmt.Errorf("failed to fetch html: %w", err)
 	}
+
 	data, err := h.Scraper.Parse(packageID, html)
 	if err != nil {
 		return nil, http.StatusInternalServerError, fmt.Errorf("failed to parse html: %w", err)
@@ -117,12 +147,13 @@ func (h *Handler) getData(c *gin.Context) (*models.PlaystoreData, int, error) {
 	if err != nil {
 		return nil, http.StatusInternalServerError, fmt.Errorf("failed to marshal data for cache: %w", err)
 	}
+
 	// Cache on a context detached from the request. The scrape is already paid
 	// for, so a client that disconnected mid-scrape - or an upstream proxy that
 	// hit its read timeout - must not cost us the result. Tying this to the
 	// request context means the cache cannot warm under exactly the load that
 	// causes those disconnects, which keeps every subsequent request a miss.
-	cacheCtx, cancel := context.WithTimeout(context.WithoutCancel(c.Request.Context()), cacheWriteTimeout)
+	cacheCtx, cancel := context.WithTimeout(context.WithoutCancel(ctx), cacheWriteTimeout)
 	defer cancel()
 	if err := h.Cache.Set(cacheCtx, cacheID, string(b), h.Config.CacheTTL); err != nil {
 		// The response is still valid and worth returning without the cache write.
