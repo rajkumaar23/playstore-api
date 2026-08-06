@@ -1,6 +1,7 @@
 package api
 
 import (
+	"context"
 	_ "embed"
 	"encoding/json"
 	"fmt"
@@ -10,9 +11,13 @@ import (
 	"playstore-api/internal/config"
 	"playstore-api/internal/models"
 	"playstore-api/internal/scraper"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
+
+// How long to allow a cache write, once it is no longer tied to the request.
+const cacheWriteTimeout = 5 * time.Second
 
 type Handler struct {
 	Scraper *scraper.PlaystoreScraper
@@ -101,9 +106,16 @@ func (h *Handler) getData(c *gin.Context) (*models.PlaystoreData, int, error) {
 	if err != nil {
 		return nil, http.StatusInternalServerError, fmt.Errorf("failed to marshal data for cache: %w", err)
 	}
-	err = h.Cache.Set(c.Request.Context(), cacheID, string(b), h.Config.CacheTTL)
-	if err != nil {
-		return nil, http.StatusInternalServerError, fmt.Errorf("failed to set data in cache: %w", err)
+	// Cache on a context detached from the request. The scrape is already paid
+	// for, so a client that disconnected mid-scrape - or an upstream proxy that
+	// hit its read timeout - must not cost us the result. Tying this to the
+	// request context means the cache cannot warm under exactly the load that
+	// causes those disconnects, which keeps every subsequent request a miss.
+	cacheCtx, cancel := context.WithTimeout(context.WithoutCancel(c.Request.Context()), cacheWriteTimeout)
+	defer cancel()
+	if err := h.Cache.Set(cacheCtx, cacheID, string(b), h.Config.CacheTTL); err != nil {
+		// The response is still valid and worth returning without the cache write.
+		log.Printf("failed to cache data for %q: %s", cacheID, err)
 	}
 
 	return data, http.StatusOK, nil
