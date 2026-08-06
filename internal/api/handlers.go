@@ -10,7 +10,6 @@ import (
 	"playstore-api/internal/config"
 	"playstore-api/internal/models"
 	"playstore-api/internal/scraper"
-	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -102,7 +101,7 @@ func (h *Handler) getData(c *gin.Context) (*models.PlaystoreData, int, error) {
 	if err != nil {
 		return nil, http.StatusInternalServerError, fmt.Errorf("failed to marshal data for cache: %w", err)
 	}
-	err = h.Cache.Set(c.Request.Context(), cacheID, string(b), time.Hour)
+	err = h.Cache.Set(c.Request.Context(), cacheID, string(b), h.Config.CacheTTL)
 	if err != nil {
 		return nil, http.StatusInternalServerError, fmt.Errorf("failed to set data in cache: %w", err)
 	}
