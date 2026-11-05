@@ -11,6 +11,7 @@ import (
 	"playstore-api/internal/config"
 	"playstore-api/internal/models"
 	"playstore-api/internal/scraper"
+	"regexp"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -23,6 +24,23 @@ const (
 	// How long to allow a cache write, once it is no longer tied to the request.
 	cacheWriteTimeout = 5 * time.Second
 )
+
+// Accepted shapes for the upstream selectors. Without these, attacker-chosen
+// characters ('&', '#', '?') could reshape the outbound request to
+// play.google.com. Anything else falls back to the configured default locale
+// (gl) or a 400 (id).
+var (
+	packageIDPattern   = regexp.MustCompile(`^[A-Za-z0-9._-]{1,200}$`)
+	geoLocationPattern = regexp.MustCompile(`^[A-Za-z]{2}$`)
+)
+
+// cacheKey composes an unambiguous Redis key for a (packageID, gl) selector
+// pair. Length-prefixing each component removes the delimiter ambiguity of a
+// plain hyphen join, and the namespace keeps our entries separate from any
+// other consumer of the shared Redis database.
+func cacheKey(packageID, gl string) string {
+	return fmt.Sprintf("playstore:v1:%d:%s:%d:%s", len(packageID), packageID, len(gl), gl)
+}
 
 type Handler struct {
 	Scraper *scraper.PlaystoreScraper
@@ -88,16 +106,20 @@ func (h *Handler) GetDataByKey(c *gin.Context) {
 
 func (h *Handler) getData(c *gin.Context) (*models.PlaystoreData, int, error) {
 	packageID := c.Query("id")
-	if packageID == "" {
-		return nil, http.StatusBadRequest, fmt.Errorf("'id' cannot be empty'")
+	if !packageIDPattern.MatchString(packageID) {
+		return nil, http.StatusBadRequest, fmt.Errorf("'id' must be a non-empty package identifier ([A-Za-z0-9._-], max 200)")
 	}
 
 	gl := c.Query("gl")
-	if gl == "" {
+	if !geoLocationPattern.MatchString(gl) {
 		gl = h.Config.DefaultGeoLocation
 	}
 
-	cacheID := fmt.Sprintf("%s-%s", packageID, gl)
+	// Length-prefixed and namespaced so the (packageID, gl) -> key mapping is
+	// injective: with the previous "id-gl" join, (id="com.foo", gl="bar-US")
+	// and (id="com.foo-bar", gl="US") collided on one key and could serve one
+	// selector's cached entry (and badge) to the other for the whole TTL.
+	cacheID := cacheKey(packageID, gl)
 	cachedData, err := h.Cache.Get(c.Request.Context(), cacheID)
 	if err == nil {
 		var data models.PlaystoreData
