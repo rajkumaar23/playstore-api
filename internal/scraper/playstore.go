@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"playstore-api/internal/models"
 	"regexp"
 	"strings"
@@ -33,12 +34,26 @@ var dsDataPattern = regexp.MustCompile(`AF_initDataCallback\({key: 'ds:5', hash:
 
 func NewPlaystoreScraper() *PlaystoreScraper {
 	return &PlaystoreScraper{
-		httpClient: &http.Client{Timeout: fetchTimeout},
+		httpClient: &http.Client{Timeout: fetchTimeout, CheckRedirect: pinUpstream},
 	}
 }
 
+// pinUpstream keeps the only outbound request in the app on its intended
+// origin: https to play.google.com, never followed off-host or downgraded.
+func pinUpstream(req *http.Request, via []*http.Request) error {
+	if req.URL.Scheme != "https" || req.URL.Host != "play.google.com" {
+		return http.ErrUseLastResponse
+	}
+	if len(via) >= 10 {
+		return http.ErrUseLastResponse
+	}
+	return nil
+}
+
 func (s *PlaystoreScraper) FetchHTML(ctx context.Context, packageID, gl string) (string, int, error) {
-	playstoreURL := fmt.Sprintf("https://play.google.com/store/apps/details?id=%s&gl=%s", packageID, gl)
+	// Both values are attacker-supplied (query params): percent-encode them so
+	// they can never inject additional query parameters into the upstream URL.
+	playstoreURL := fmt.Sprintf("https://play.google.com/store/apps/details?id=%s&gl=%s", url.QueryEscape(packageID), url.QueryEscape(gl))
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, playstoreURL, nil)
 	if err != nil {
 		return "", http.StatusInternalServerError, fmt.Errorf("error building request for '%s': %w", playstoreURL, err)
