@@ -2,6 +2,7 @@ package models
 
 import (
 	"reflect"
+	"strconv"
 	"strings"
 )
 
@@ -84,9 +85,27 @@ func NewPlaystoreData(packageID string, data []interface{}) *PlaystoreData {
 func (p *PlaystoreData) GetField(key string) (string, string) {
 	val := reflect.ValueOf(*p)
 	for i := 0; i < val.Type().NumField(); i++ {
-		if strings.EqualFold(key, val.Type().Field(i).Tag.Get("json")) {
-			return val.Type().Field(i).Tag.Get("shields"), val.Field(i).Interface().(string)
+		if !strings.EqualFold(key, val.Type().Field(i).Tag.Get("json")) {
+			continue
 		}
+		label := val.Type().Field(i).Tag.Get("shields")
+		field := val.Field(i)
+		switch field.Kind() {
+		case reflect.String:
+			return label, field.String()
+		case reflect.Float64:
+			return label, strconv.FormatFloat(field.Float(), 'f', -1, 64)
+		case reflect.Slice:
+			if field.Type().Elem().Kind() == reflect.String {
+				parts := make([]string, 0, field.Len())
+				for j := 0; j < field.Len(); j++ {
+					parts = append(parts, field.Index(j).String())
+				}
+				return label, strings.Join(parts, ", ")
+			}
+			return "", ""
+		}
+		return "", ""
 	}
 	return "", ""
 }
@@ -99,23 +118,62 @@ func getAttributeFromData[T any](data []interface{}, indices ...int) T {
 			return zero
 		}
 		if i+1 == len(indices) {
-			return currentData[index].(T)
+			// Checked: an upstream shape change (number where a string is
+			// expected, or vice versa) yields the zero value instead of
+			// panicking inside the request path.
+			v, ok := currentData[index].(T)
+			if !ok {
+				return zero
+			}
+			return v
 		}
-		currentData = currentData[index].([]interface{})
+		next, ok := currentData[index].([]interface{})
+		if !ok {
+			return zero
+		}
+		currentData = next
 	}
 	return zero
+}
+
+// nestedSlice indexes v as a []interface{} element at index, reporting
+// failure instead of panicking when upstream data deviates from the expected
+// shape.
+func nestedSlice(v interface{}, index int) ([]interface{}, bool) {
+	s, ok := v.([]interface{})
+	if !ok || index >= len(s) {
+		return nil, false
+	}
+	t, ok := s[index].([]interface{})
+	return t, ok
 }
 
 func parseScreenshots(data []interface{}) []string {
 	var screenshots []string
 
-	if len(data) > 1 && len(data[1].([]interface{})) > 2 && len(data[1].([]interface{})[2].([]interface{})) > 78 {
-		screenshotData := data[1].([]interface{})[2].([]interface{})[78].([]interface{})[0].([]interface{})
-		for _, item := range screenshotData {
-			if len(item.([]interface{})) > 3 && len(item.([]interface{})[3].([]interface{})) > 2 {
-				screenshot := item.([]interface{})[3].([]interface{})[2]
-				screenshots = append(screenshots, screenshot.(string))
-			}
+	l1, ok := nestedSlice(data, 1)
+	if !ok {
+		return screenshots
+	}
+	l2, ok := nestedSlice(l1, 2)
+	if !ok {
+		return screenshots
+	}
+	l78, ok := nestedSlice(l2, 78)
+	if !ok {
+		return screenshots
+	}
+	l0, ok := nestedSlice(l78, 0)
+	if !ok {
+		return screenshots
+	}
+	for _, item := range l0 {
+		i3, ok := nestedSlice(item, 3)
+		if !ok || len(i3) <= 2 {
+			continue
+		}
+		if screenshot, ok := i3[2].(string); ok {
+			screenshots = append(screenshots, screenshot)
 		}
 	}
 
