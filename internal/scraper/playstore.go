@@ -44,6 +44,14 @@ func NewPlaystoreScraper() *PlaystoreScraper {
 	}
 }
 
+// WithTransport replaces the scraper's outbound transport and returns it.
+// A documented seam for tests, which stub the origin without network access;
+// production code never calls it.
+func (s *PlaystoreScraper) WithTransport(rt http.RoundTripper) *PlaystoreScraper {
+	s.httpClient.Transport = rt
+	return s
+}
+
 // pinUpstream keeps the only outbound request in the app on its intended
 // origin: https to play.google.com, never followed off-host or downgraded.
 func pinUpstream(req *http.Request, via []*http.Request) error {
