@@ -23,6 +23,17 @@ const (
 	scrapeTimeout = 15 * time.Second
 	// How long to allow a cache write, once it is no longer tied to the request.
 	cacheWriteTimeout = 5 * time.Second
+	// How many scrapes may run at once. The scrape is detached from the
+	// caller, so without this bound one client spraying unique ids commits
+	// unbounded upstream fetches, buffers and goroutines to the process.
+	maxConcurrentScrapes = 8
+	// How long a caller waits for a scrape slot before being asked back.
+	upstreamWaitTimeout = 2 * time.Second
+	// Failed scrapes are remembered briefly so a persistently failing key
+	// does not re-buy a full upstream fetch on every request.
+	negativeCacheTTL = time.Minute
+	// Prefix for failure markers kept alongside cached successes.
+	negativeCachePrefix = "neg:"
 )
 
 // Accepted shapes for the upstream selectors. Without these, attacker-chosen
@@ -49,6 +60,9 @@ type Handler struct {
 
 	// Deduplicates in-flight scrapes by cache key.
 	scrapes singleflight.Group
+
+	// Caps concurrently running scrapes (see maxConcurrentScrapes).
+	scrapeSem chan struct{}
 }
 
 // scrapeResult carries the status code alongside the payload, since
@@ -59,7 +73,7 @@ type scrapeResult struct {
 }
 
 func NewHandler(s *scraper.PlaystoreScraper, c cache.Cache, cfg *config.Config) *Handler {
-	return &Handler{Scraper: s, Cache: c, Config: cfg}
+	return &Handler{Scraper: s, Cache: c, Config: cfg, scrapeSem: make(chan struct{}, maxConcurrentScrapes)}
 }
 
 //go:embed static/landing.html
@@ -116,10 +130,13 @@ func (h *Handler) getData(c *gin.Context) (*models.PlaystoreData, int, error) {
 	}
 
 	// Length-prefixed and namespaced so the (packageID, gl) -> key mapping is
-	// injective: with the previous "id-gl" join, (id="com.foo", gl="bar-US")
-	// and (id="com.foo-bar", gl="US") collided on one key and could serve one
-	// selector's cached entry (and badge) to the other for the whole TTL.
+	// injective: with a plain "id-gl" join, (id="com.foo", gl="bar-US") and
+	// (id="com.foo-bar", gl="US") collide on one key and can serve one
+	// selector's cached entry to the other.
 	cacheID := cacheKey(packageID, gl)
+	if _, err := h.Cache.Get(c.Request.Context(), negativeCachePrefix+cacheID); err == nil {
+		return nil, http.StatusBadGateway, fmt.Errorf("recent upstream failure for this package; retry shortly")
+	}
 	cachedData, err := h.Cache.Get(c.Request.Context(), cacheID)
 	if err == nil {
 		var data models.PlaystoreData
@@ -136,6 +153,15 @@ func (h *Handler) getData(c *gin.Context) (*models.PlaystoreData, int, error) {
 	// multi-megabyte buffers, indefinitely.
 	scrapeCtx, cancelScrape := context.WithTimeout(context.WithoutCancel(c.Request.Context()), scrapeTimeout)
 	defer cancelScrape()
+
+	// Bound concurrent scrapes: the work below is detached from the caller,
+	// so a saturated service sheds new fetch work instead of accumulating it.
+	select {
+	case h.scrapeSem <- struct{}{}:
+		defer func() { <-h.scrapeSem }()
+	case <-time.After(upstreamWaitTimeout):
+		return nil, http.StatusTooManyRequests, fmt.Errorf("upstream busy, retry shortly")
+	}
 
 	// Collapse concurrent misses for the same key into one scrape. A popular
 	// package requested by many clients at once, or any traffic arriving
@@ -154,19 +180,30 @@ func (h *Handler) getData(c *gin.Context) (*models.PlaystoreData, int, error) {
 	return result.data, http.StatusOK, nil
 }
 
+// markFailed records a brief negative-cache entry so a persistently failing
+// key is not re-scraped on every request until the TTL expires.
+func (h *Handler) markFailed(cacheID string) {
+	ctx, cancel := context.WithTimeout(context.Background(), cacheWriteTimeout)
+	defer cancel()
+	_ = h.Cache.Set(ctx, negativeCachePrefix+cacheID, "1", negativeCacheTTL)
+}
+
 func (h *Handler) scrape(ctx context.Context, packageID, gl, cacheID string) (*models.PlaystoreData, int, error) {
 	html, code, err := h.Scraper.FetchHTML(ctx, packageID, gl)
 	if err != nil {
+		h.markFailed(cacheID)
 		return nil, code, fmt.Errorf("failed to fetch html: %w", err)
 	}
 
 	data, err := h.Scraper.Parse(packageID, html)
 	if err != nil {
+		h.markFailed(cacheID)
 		return nil, http.StatusInternalServerError, fmt.Errorf("failed to parse html: %w", err)
 	}
 
 	b, err := json.Marshal(*data)
 	if err != nil {
+		h.markFailed(cacheID)
 		return nil, http.StatusInternalServerError, fmt.Errorf("failed to marshal data for cache: %w", err)
 	}
 
