@@ -21,6 +21,12 @@ type PlaystoreScraper struct {
 // carries no deadline of its own.
 const fetchTimeout = 15 * time.Second
 
+// maxFetchBytes bounds a single upstream response. Play Store detail pages
+// are multi-megabyte but never near this ceiling; the limit stops both an
+// adversarial upstream and a forged Content-Length from committing unbounded
+// memory to the shared heap.
+const maxFetchBytes = 10 << 20
+
 // The payload lives in an inline script that calls AF_initDataCallback with
 // key ds:5. Locating that call directly is enough - the surrounding document
 // is never needed - so the marker doubles as the start of the regex match.
@@ -72,13 +78,22 @@ func (s *PlaystoreScraper) FetchHTML(ctx context.Context, packageID, gl string) 
 	// Read straight into a builder rather than via io.ReadAll: its String()
 	// hands back the accumulated bytes without the extra full-size copy that
 	// converting a []byte to string would cost on a multi-megabyte page.
+	// The advertised length is never trusted past maxFetchBytes, and the copy
+	// itself is hard-capped so no upstream can grow the heap beyond the bound.
+	if res.ContentLength > maxFetchBytes {
+		return "", http.StatusBadGateway, fmt.Errorf("upstream body too large: %d bytes advertised", res.ContentLength)
+	}
 	var body strings.Builder
 	if res.ContentLength > 0 {
 		body.Grow(int(res.ContentLength))
 	}
 
-	if _, err := io.Copy(&body, res.Body); err != nil {
+	n, err := io.Copy(&body, io.LimitReader(res.Body, maxFetchBytes+1))
+	if err != nil {
 		return "", http.StatusInternalServerError, fmt.Errorf("error reading playstore response for '%s': %w", playstoreURL, err)
+	}
+	if n > maxFetchBytes {
+		return "", http.StatusBadGateway, fmt.Errorf("upstream body exceeds %d byte limit", maxFetchBytes)
 	}
 
 	return body.String(), http.StatusOK, nil
