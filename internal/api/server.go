@@ -24,6 +24,9 @@ func NewRouter(h *Handler) *gin.Engine {
 
 	router.GET("/", h.GetREADME)
 	router.GET("/favicon.ico", h.GetFavicon)
+	router.GET("/favicon.svg", h.GetFaviconSVG)
+	router.GET("/apple-touch-icon.png", h.GetAppleTouchIcon)
+	router.GET("/og-cover.png", h.GetOGCover)
 	router.GET("/json", h.GetAllData)
 	router.GET("/:key", h.GetDataByKey)
 

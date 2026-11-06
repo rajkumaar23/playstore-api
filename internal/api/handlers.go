@@ -90,6 +90,27 @@ func (h *Handler) GetFavicon(c *gin.Context) {
 	c.Data(http.StatusOK, "image/x-icon", []byte(favicon))
 }
 
+//go:embed static/favicon.svg
+var faviconSVG string
+
+func (h *Handler) GetFaviconSVG(c *gin.Context) {
+	c.Data(http.StatusOK, "image/svg+xml", []byte(faviconSVG))
+}
+
+//go:embed static/apple-touch-icon.png
+var appleTouchIcon []byte
+
+func (h *Handler) GetAppleTouchIcon(c *gin.Context) {
+	c.Data(http.StatusOK, "image/png", appleTouchIcon)
+}
+
+//go:embed static/og-cover.png
+var ogCover []byte
+
+func (h *Handler) GetOGCover(c *gin.Context) {
+	c.Data(http.StatusOK, "image/png", ogCover)
+}
+
 func (h *Handler) GetAllData(c *gin.Context) {
 	data, code, err := h.getData(c)
 	if err != nil {
