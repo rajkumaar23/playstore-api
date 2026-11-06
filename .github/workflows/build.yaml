@@ -6,7 +6,17 @@ on:
   push:
     branches: ["main"]
     paths-ignore:
-      - "README.md"
+      # Docs and repo-meta changes must not burn a registry push. Anything
+      # that changes the binary (Go sources, go.mod/sum, Dockerfile,
+      # static/ embeds) still falls through and builds - including this
+      # workflow itself, so workflow tweaks are validated by a real build.
+      - "**.md"
+      - "docs/**"
+      - "LICENSE"
+      - ".gitignore"
+      - ".editorconfig"
+      - ".github/**"
+      - "!.github/workflows/build.yaml"
 
 concurrency:
   group: 'api'
