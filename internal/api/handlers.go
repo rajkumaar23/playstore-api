@@ -97,7 +97,7 @@ func (h *Handler) GetAllData(c *gin.Context) {
 		c.JSON(code, gin.H{"error": "failed to get data"})
 		return
 	}
-	c.JSON(http.StatusOK, data)
+	c.Render(http.StatusOK, verbatimJSON{data})
 }
 
 func (h *Handler) GetDataByKey(c *gin.Context) {
@@ -115,7 +115,7 @@ func (h *Handler) GetDataByKey(c *gin.Context) {
 	}
 
 	// shields.io format
-	c.JSON(http.StatusOK, gin.H{"schemaVersion": 1, "label": label, "message": message})
+	c.Render(http.StatusOK, verbatimJSON{gin.H{"schemaVersion": 1, "label": label, "message": message}})
 }
 
 func (h *Handler) getData(c *gin.Context) (*models.PlaystoreData, int, error) {
