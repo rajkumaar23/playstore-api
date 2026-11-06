@@ -1,106 +1,120 @@
-# Unofficial Google Play Store API
+<div align="center">
 
-**Explore android app metadata with ease!**
+<img src="https://play.rajkumaar.co.in/apple-touch-icon.png" alt="Play Store API" width="84" height="84" />
+
+# Play Store API
+
+**Every app on Play. One GET request.**
+
+Real-time Google Play metadata — versions, installs, ratings, screenshots — as clean JSON.
+No key. No signup. Open source.
+
+[**Try it live → play.rajkumaar.co.in**](https://play.rajkumaar.co.in)
 
 [![build image](https://github.com/rajkumaar23/playstore-api/actions/workflows/build.yaml/badge.svg)](https://github.com/rajkumaar23/playstore-api/actions/workflows/build.yaml)
 [![nightly test](https://github.com/rajkumaar23/playstore-api/actions/workflows/test.yaml/badge.svg)](https://github.com/rajkumaar23/playstore-api/actions/workflows/test.yaml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-2ee584)](LICENSE)
+![version](https://img.shields.io/endpoint?color=blue&url=https://play.rajkumaar.co.in/version?id=com.dd.doordash)
+![uptime API](https://img.shields.io/endpoint?color=success&url=https://play.rajkumaar.co.in/downloads?id=com.dd.doordash)
 
-## Usage
+</div>
 
-Retrieve comprehensive JSON data for any app from Google Play by making a simple GET request:
+---
+
+## Show me
+
+```bash
+curl "https://play.rajkumaar.co.in/json?id=com.dd.doordash"
 ```
-https://play.rajkumaar.co.in/json?id=<YOUR-PACKAGE-ID>
-```
-Example : https://play.rajkumaar.co.in/json?id=com.dd.doordash
 
-Sample JSON response with all possible details:
 ```json
 {
-    "packageID": "com.dd.doordash",
-    "name": "DoorDash - Food Delivery",
-    "version": "15.156.24",
-    "downloads": "50,000,000+",
-    "downloadsExact": 61535856,
-    "lastUpdated": "Mar 29, 2024",
-    "launchDate": "Mar 26, 2015",
-    "developer": "DoorDash",
-    "screenshots": [
-        "https://play-lh.googleusercontent.com/b-ZRIvKPErodCjPJo47AB_Fl1dGgOUAGoe03OjER7lzZPffz3Cv0xgMniNHfRYR-bQg",
-        "https://play-lh.googleusercontent.com/-z9S93iM5RR6xOU8Sj774aNZsSATCZymn3fJiOnzW1VuGteh5vLfgyTjIiKOMhCFfjc",
-        "https://play-lh.googleusercontent.com/2iNMFwIwCHD8otkfT_AgZU62UNqJziCay3uEVEDFrXmz78wuOf-hTNZbLwdEgShWcfM",
-        "https://play-lh.googleusercontent.com/UZPWjpQcp-3U2FeUxAIuU9zX2P-z4rhKwmH0hyyr4sUQoKVUotKb_SdhuRBxMW0KsuY",
-        "https://play-lh.googleusercontent.com/jUcGpu7azj7RwB4brZyq1xoCzyobyUkHwyNcuhfZJK-6DDvm7AFB0ldsTP4Hs2h5UsHg",
-        "https://play-lh.googleusercontent.com/3Fkc_6o-818jRxVuP42rluJNjx_CQ77Bs8Fx-HDD6jAxRmD-irJLsMAtiIvm3sC8qeZN"
-    ],
-    "category": "Food \u0026 Drink",
-    "logo": "https://play-lh.googleusercontent.com/Fvled-zLfL8ER0EBNIk-FnunJCcH2u_T6rdITclOFdU2jpEopdMstZOHP-PtuhP_5coZ",
-    "banner": "https://play-lh.googleusercontent.com/TmWukTjL87iibmuHXhc9d04Hvul6nErQXE0nRcJvvsiFffDBjE0JmGns57r1x1RihMA",
-    "privacyPolicy": "https://www.doordash.com/privacy/",
-    "latestUpdateMessage": "Our mission is to deliver good by connecting people and possibility...",
-    "website": "https://www.doordash.com/",
-    "supportEmail": "support@doordash.com",
-    "rating": "4.6",
-    "noOfUsersRated": "4,299,422",
-    "description": "Delivery anywhere you are. DoorDash offers the greatest online selection of your favorite restaurants and stores, facilitating delivery of freshly prepared meals, groceries, OTC medicines, flowers \u0026amp; more...",
+  "packageID": "com.dd.doordash",
+  "name": "DoorDash: Food, Grocery, More",
+  "version": "15.299.7",
+  "downloads": "50,000,000+",
+  "downloadsExact": 91787576,
+  "lastUpdated": "Nov 3, 2026",
+  "launchDate": "Mar 26, 2015",
+  "developer": "DoorDash",
+  "category": "Food & Drink",
+  "rating": "4.7",
+  "noOfUsersRated": "6,303,190",
+  "logo": "https://play-lh.googleusercontent.com/…",
+  "banner": "https://play-lh.googleusercontent.com/…",
+  "screenshots": ["https://play-lh.googleusercontent.com/…", "…"],
+  "website": "https://www.doordash.com/",
+  "privacyPolicy": "https://www.doordash.com/privacy/",
+  "supportEmail": "support@doordash.com",
+  "latestUpdateMessage": "…",
+  "description": "Delivery anywhere you are. …"
 }
 ```
 
-### Known Issues
+All **19 fields**, in one object, scraped on demand and cached. The [playground](https://play.rajkumaar.co.in) runs these requests live in your browser — no curl required.
 
-The API might return `0` for `rating` and `noOfUsersRated` since Google Play Store ratings are region-specific. To retrieve ratings for a particular country, add `&gl=COUNTRY_CODE` to the URL. For instance, use `&gl=IN` to get ratings for an app in India.
+## Endpoints
 
-> Example : https://play.rajkumaar.co.in/json?id=in.co.rajkumaar.amritarepo&gl=IN
+| Method | Path | Returns |
+|---|---|---|
+| `GET` | `/json?id=<pkg>[&gl=CC]` | the full object above |
+| `GET` | `/<field>?id=<pkg>[&gl=CC]` | one field, [shields.io](https://shields.io) badge format |
 
-## Integration with [Shields.io](https://shields.io)
-Customize your README with dynamic badges for specific attributes. Utilize the following template:
+`id` accepts `[A-Za-z0-9._-]{1,200}`. `gl` is an optional ISO country code — ratings are region-specific, so pass one (e.g. `&gl=IN`) when the default returns `0`.
+
+Any response field works as `<field>` — `version`, `downloads`, `downloadsExact`, `rating`, `noOfUsersRated`, `lastUpdated`, `launchDate`, `developer`, `category`, and the rest of the 19.
+
+## Badges in your README
+
 ```markdown
-![Badge](https://img.shields.io/endpoint?url=https://play.rajkumaar.co.in/<ATTRIBUTE-NAME>?id=<PACKAGE-ID>)
+![Downloads](https://img.shields.io/endpoint?color=success&url=https://play.rajkumaar.co.in/downloads?id=com.dd.doordash)
+![Version](https://img.shields.io/endpoint?color=blue&url=https://play.rajkumaar.co.in/version?id=com.dd.doordash)
+![Rating](https://img.shields.io/endpoint?color=orange&url=https://play.rajkumaar.co.in/rating?id=com.dd.doordash)
 ```
-Supported attributes: 
-- packageID
-- name
-- version
-- downloads
-- downloadsExact
-- lastUpdated
-- launchDate
-- developer
-- description
-- screenshots
-- category
-- logo
-- banner
-- privacyPolicy
-- latestUpdateMessage
-- website
-- supportEmail
-- rating
-- noOfUsersRated
 
-Explore customization options based on shields.io style parameters. Learn more [here](https://shields.io/).
+![Downloads](https://img.shields.io/endpoint?color=success&url=https://play.rajkumaar.co.in/downloads?id=com.dd.doordash)
+![Version](https://img.shields.io/endpoint?color=blue&url=https://play.rajkumaar.co.in/version?id=com.dd.doordash)
+![Rating](https://img.shields.io/endpoint?color=orange&url=https://play.rajkumaar.co.in/rating?id=com.dd.doordash)
 
-### Examples
+These badges are being served by this very API as you read this. Add `&style=for-the-badge&color=…` for styling — see [shields.io](https://shields.io).
 
-Downloads
-```markdown
-![Downloads Badge](https://img.shields.io/endpoint?color=success&url=https://play.rajkumaar.co.in/downloads?id=com.dd.doordash)
+## Self-host it
+
+```bash
+git clone https://github.com/rajkumaar23/playstore-api && cd playstore-api
+docker compose up -d          # API on :5003, Redis, Prometheus on :5004
 ```
-![Downloads Badge](https://img.shields.io/endpoint?color=success&url=https://play.rajkumaar.co.in/downloads?id=com.dd.doordash)
 
-Version
-```markdown
-![Version Badge](https://img.shields.io/endpoint?color=blue&url=https://play.rajkumaar.co.in/version?id=com.dd.doordash)
+Or run the image against your own Redis:
+
+```bash
+docker run -d -p 5003:5003 \
+  -e REDIS_ADDRESS=your-redis:6379 \
+  ghcr.io/rajkumaar23/playstore-api:main
 ```
-![Version Badge](https://img.shields.io/endpoint?color=blue&url=https://play.rajkumaar.co.in/version?id=com.dd.doordash)
 
-Developer
-```markdown
-![Dev Badge](https://img.shields.io/endpoint?color=orange&style=for-the-badge&url=https://play.rajkumaar.co.in/developer?id=com.dd.doordash)
+| Env | Default | Meaning |
+|---|---|---|
+| `SERVER_PORT` | `5003` | HTTP port |
+| `METRICS_PORT` | `5004` | Prometheus `/metrics` |
+| `REDIS_ADDRESS` | — | `host:port` of your Redis |
+| `CACHE_TTL` | `24h` | how long responses are cached |
+| `DEFAULT_GL` | `US` | fallback country code |
+| `GIN_MODE` | — | `release` in production |
+
+## Develop
+
+```bash
+go run ./cmd/playstore-api     # needs REDIS_ADDRESS
+go test ./...                  # unit + security regression suites
 ```
-![Dev Badge](https://img.shields.io/endpoint?color=orange&style=for-the-badge&url=https://play.rajkumaar.co.in/developer?id=com.dd.doordash)
 
+## Notes
 
-### License
-Find the license [here](LICENSE)
+- Unofficial — this reads public Play Store pages; be gentle, the cache does the rest.
+- `rating` / `noOfUsersRated` can be `0` for the default region; use `&gl=CC`.
+- New package IDs trigger a live scrape on first request; subsequent hits are cached.
 
+## License
 
+[MIT](LICENSE) · Built by [Rajkumar](https://rajkumaar.co.in)
