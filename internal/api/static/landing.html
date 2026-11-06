@@ -2,18 +2,56 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Play Store API — app data, one GET request</title>
-<meta name="description" content="Unofficial Google Play Store API by Rajkumar. Real-time app metadata — version, installs, ratings, screenshots — as clean JSON. No key, no signup. Try it live.">
-<meta name="keywords" content="Play Store API, Google Play API, Android app metadata, app details, JSON API, Rajkumar">
+<title>Play Store API — Unofficial Google Play Store JSON API</title>
+<meta name="description" content="Free unofficial Google Play Store API: real-time app metadata — version, installs, ratings, screenshots, developer — as clean JSON. No key, no signup. Live playground at play.rajkumaar.co.in">
+<meta name="keywords" content="Play Store API, Google Play API, Android app metadata, app details, JSON API, app ratings API, app install count API, unofficial play store, Rajkumar">
 <meta name="author" content="Rajkumar">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta property="og:title" content="Play Store API — app data, one GET request">
-<meta property="og:description" content="Real-time Play Store metadata as clean JSON. No key. Try it live in the browser.">
-<meta property="og:type" content="website">
-<link rel="icon" href="/favicon.ico">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<meta name="theme-color" content="#07090c">
+<link rel="canonical" href="https://play.rajkumaar.co.in/">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="alternate icon" href="/favicon.ico" sizes="any">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+<!-- Open Graph / social sharing -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Play Store API">
+<meta property="og:url" content="https://play.rajkumaar.co.in/">
+<meta property="og:title" content="Play Store API — Every app on Play. One GET request.">
+<meta property="og:description" content="Real-time Play Store metadata — version, installs, ratings, screenshots — as clean JSON. No key, no signup. Try it live in the browser.">
+<meta property="og:image" content="https://play.rajkumaar.co.in/og-cover.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Play Store API — dark cover with green play mark, tagline and sample JSON response">
+<meta property="og:locale" content="en_US">
+
+<!-- Twitter / X -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Play Store API — Every app on Play. One GET request.">
+<meta name="twitter:description" content="Real-time Play Store metadata as clean JSON. No key, no signup. Live playground included.">
+<meta name="twitter:image" content="https://play.rajkumaar.co.in/og-cover.png">
+<meta name="twitter:image:alt" content="Play Store API cover with green play mark and sample JSON">
+
+<!-- Structured data -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "Play Store API",
+  "url": "https://play.rajkumaar.co.in/",
+  "description": "Unofficial API returning real-time Google Play Store app metadata — version, installs, ratings, screenshots — as JSON. Free, no key.",
+  "applicationCategory": "DeveloperApplication",
+  "operatingSystem": "Web",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+  "license": "https://opensource.org/licenses/MIT",
+  "sameAs": "https://github.com/rajkumaar23/playstore-api",
+  "author": { "@type": "Person", "name": "Rajkumar", "url": "https://rajkumaar.co.in" }
+}
+</script>
 <style>
 /* ============================== tokens ============================== */
 :root{
