@@ -348,7 +348,7 @@ nav.scrolled{border-bottom-color:var(--hairline);background:rgba(7,9,12,.82)}
 .ov-stat .stars{color:var(--amber);font-size:11px;letter-spacing:1px}
 .ov-links{display:flex;gap:16px;font-size:13.5px;margin-bottom:16px;flex-wrap:wrap}
 .ov-links a{display:inline-flex;align-items:center;gap:6px}
-.desc{font-size:14px;color:var(--ink-muted);max-height:4.8em;overflow:hidden;position:relative;margin-bottom:10px;text-wrap:pretty}
+.desc{font-size:14px;color:var(--ink-muted);max-height:4.8em;overflow:hidden;position:relative;margin-bottom:10px;text-wrap:pretty;white-space:pre-wrap}
 .desc button{background:none;border:none;color:var(--blue);font-size:12.5px;padding:0;margin-top:4px}
 .shots-big{display:flex;gap:10px;overflow-x:auto;padding:4px 0 12px;scrollbar-width:thin}
 .shots-big img{height:190px;border-radius:12px;border:1px solid var(--hairline);background:var(--panel-2);flex:none;transition:transform .2s}
@@ -862,6 +862,20 @@ function installsTitle(d){
   return parts.join(" · ");
 }
 
+/* Play descriptions arrive as HTML-ish text: literal <br> separators and
+   numeric/named entities (&#39;, &amp;...). The Overview card is a human
+   view, so <br> becomes a line break (rendered via pre-wrap), stray tags
+   are dropped and entities are decoded through an inert textarea. The JSON
+   tab intentionally keeps the raw API payload. */
+function humanDesc(s){
+  if(!s) return "";
+  let t = String(s).replace(/<br\s*\/?>/gi, "\n").replace(/<[^>]+>/g, " ");
+  const ta = document.createElement("textarea");
+  ta.innerHTML = t;
+  t = ta.value;
+  return t.replace(/[ \t]+\n/g, "\n").replace(/\n{3,}/g, "\n\n").trim();
+}
+
 function renderOverview(d){
   $("#ovEmpty").style.display = "none";
   const shots = (d.screenshots||[]).slice(0,6);
@@ -882,7 +896,7 @@ function renderOverview(d){
           ${d.privacyPolicy?`<a href="${esc(d.privacyPolicy)}" target="_blank" rel="noopener">↗ Privacy policy</a>`:""}
           ${d.supportEmail?`<a href="mailto:${esc(d.supportEmail)}">✉ ${esc(d.supportEmail)}</a>`:""}
         </div>
-        ${d.description?`<div class="desc" id="ovDesc">${esc(d.description)}</div><button class="copy-btn" id="descMore" style="margin-bottom:14px">show more</button>`:""}
+        ${d.description?`<div class="desc" id="ovDesc">${esc(humanDesc(d.description))}</div><button class="copy-btn" id="descMore" style="margin-bottom:14px">show more</button>`:""}
         ${shots.length?`<div class="shots-big">${shots.map(s=>`<img src="${esc(s)}" alt="screenshot" loading="lazy" onerror="this.remove()">`).join("")}</div>`:""}
       </div>
     </div>`;
