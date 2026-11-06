@@ -14,8 +14,8 @@ No key. No signup. Open source.
 [![build image](https://github.com/rajkumaar23/playstore-api/actions/workflows/build.yaml/badge.svg)](https://github.com/rajkumaar23/playstore-api/actions/workflows/build.yaml)
 [![nightly test](https://github.com/rajkumaar23/playstore-api/actions/workflows/test.yaml/badge.svg)](https://github.com/rajkumaar23/playstore-api/actions/workflows/test.yaml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-2ee584)](LICENSE)
-![version](https://img.shields.io/endpoint?color=blue&url=https://play.rajkumaar.co.in/version?id=com.dd.doordash)
-![uptime API](https://img.shields.io/endpoint?color=success&url=https://play.rajkumaar.co.in/downloads?id=com.dd.doordash)
+![Go](https://img.shields.io/badge/go-1.26-00add8?logo=go&logoColor=white)
+![Docker](https://img.shields.io/badge/docker-ghcr.io-2496ed?logo=docker&logoColor=white)
 
 </div>
 
