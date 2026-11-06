@@ -801,6 +801,29 @@ function stars(r){
   return "★".repeat(f) + "☆".repeat(5-f);
 }
 
+/* Installs are shown from downloadsExact in compact form (10B+, 91M+, 100K+)
+   so phone-width tiles never wrap; the Play bucket string rides along as a
+   tooltip. Falls back to the bucket when the exact count is unavailable. */
+function compactInstalls(d){
+  const n = Number(d.downloadsExact);
+  if(!isFinite(n) || n <= 0) return d.downloads || "—";
+  const units = [[1e9,"B"],[1e6,"M"],[1e3,"K"]];
+  for(const [u,s] of units){
+    if(n >= u){
+      const v = n/u;
+      return (v >= 10 ? Math.floor(v) : Math.round(v*10)/10) + s + "+";
+    }
+  }
+  return n + "+";
+}
+function installsTitle(d){
+  const n = Number(d.downloadsExact);
+  const parts = [];
+  if(isFinite(n) && n > 0) parts.push(n.toLocaleString("en-US") + " exact");
+  if(d.downloads) parts.push(d.downloads + " on Play");
+  return parts.join(" · ");
+}
+
 function renderOverview(d){
   $("#ovEmpty").style.display = "none";
   const shots = (d.screenshots||[]).slice(0,6);
@@ -811,7 +834,7 @@ function renderOverview(d){
         <div class="ov-name">${esc(d.name||d.packageID)}</div>
         <div class="ov-dev">${esc(d.developer||"")} ${d.category?`<span style="color:var(--ink-faint)">· ${esc(d.category)}</span>`:""}</div>
         <div class="ov-stats">
-          <div class="ov-stat"><div class="v">${esc(d.downloads||"—")}</div><div class="k">Installs</div></div>
+          <div class="ov-stat"><div class="v" title="${esc(installsTitle(d))}">${esc(compactInstalls(d))}</div><div class="k">Installs</div></div>
           <div class="ov-stat"><div class="v">${esc(d.rating||"0")}<span class="stars">${stars(d.rating)}</span></div><div class="k">Rating</div></div>
           <div class="ov-stat"><div class="v">${esc(d.version||"—")}</div><div class="k">Version</div></div>
           <div class="ov-stat"><div class="v">${esc(d.lastUpdated||"—")}</div><div class="k">Updated</div></div>
@@ -940,7 +963,8 @@ function fillHero(d){
   HC.name.textContent = d.name || d.packageID;
   HC.dev.textContent = d.developer || "";
   HC.cat.textContent = [d.category, d.launchDate ? "· launched " + d.launchDate : ""].filter(Boolean).join(" ");
-  HC.dl.textContent = d.downloads || "—";
+  HC.dl.textContent = compactInstalls(d);
+  HC.dl.title = installsTitle(d);
   HC.rating.childNodes[0].nodeValue = (d.rating && d.rating !== "0") ? d.rating : "—";
   HC.stars.textContent = stars(d.rating);
   HC.ver.textContent = d.version || "—";
